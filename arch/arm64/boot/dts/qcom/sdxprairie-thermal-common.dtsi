@@ -139,7 +139,7 @@
 		polling-delay = <0>;
 		thermal-governor = "user_space";
 		thermal-sensors = <&qmi_sensor
-				(QMI_MODEM_NR_INST_ID+QMI_PA)>;
+				(QMI_MODEM_NR_INST_ID+QMI_QFE_WTR_0)>;
 		wake-capable-sensor;
 		trips {
 			active-config0 {
