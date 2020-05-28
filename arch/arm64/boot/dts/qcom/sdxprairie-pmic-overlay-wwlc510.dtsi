@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "pmxprairie.dtsi"
+#include "pm8150b.dtsi"
+#include <dt-bindings/pinctrl/qcom,pmic-gpio.h>
+
+&pm8150b_charger {
+	dpdm-supply = <&usb2_phy>;
+
+	smb5_vconn: qcom,smb5-vconn {
+		regulator-name = "smb5-vconn";
+	};
+
+	smb5_vbus: qcom,smb5-vbus {
+		regulator-name = "smb5-vbus";
+	};
+};
+
+/delete-node/ &pm8150b_hr_led;
+
+&pm8150b_pdphy {
+	vdd-pdphy-supply = <&L10E>;
+	vbus-supply = <&smb5_vbus>;
+	vconn-supply = <&smb5_vconn>;
+};
+
+/*
+&usb {
+	extcon = <&pm8150b_pdphy>;
+};
+*/
+
+/*
+ * Disable the feature of reset system when press power
+ * key for 8 seconds via modify the s2 and s3 configure.
+*/
+&pmxprairie_power_on {
+	qcom,s3-src = "resin";
+};
+
+&power_on_pon1 {
+	qcom,support-reset = <0>;
+};
+
+&power_on_pon2 {
+        qcom,support-reset = <0>;
+};

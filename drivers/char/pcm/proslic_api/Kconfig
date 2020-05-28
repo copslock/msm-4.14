@@ -1,0 +1,57 @@
+menu "SLIC peripheral circuit"
+config SI3217X_C_LCQC3W
+	tristate "si3217x revc lcqc3w chip"
+	depends on m
+	select PROSLIC
+	default n 
+
+config SI3217X_C_LCQC6W
+	tristate "si3217x revc lcqc6w chip"
+	depends on m
+	select PROSLIC
+	default n
+
+config SI3217X_C_LCQC7P6W
+	tristate "si3217x revc lcqc7p6w chip"
+	depends on m
+	select PROSLIC
+	default n
+
+config SI3217X_C_FB
+	tristate "si3217x revc fb chip"
+	depends on m
+	select PROSLIC
+	default n
+
+config SI3217X_C_LCFB
+	tristate "si3217x revc lcfb chip"
+	depends on m
+	select PROSLIC
+	default n
+
+config SI3217X_C_LCUB
+	tristate "si3217x revc lcub chip"
+	depends on m
+	select PROSLIC
+	default n
+
+config SI3217X_C_BB
+	tristate "si3217x revc bb chip"
+	depends on m
+	select PROSLIC
+	default n
+
+config SI3217X_C_PBB
+	tristate "si3217x revc 7bb chip"
+	depends on m
+	select PROSLIC
+	default n
+
+menu "PROSLIC CORE"
+config PROSLIC
+	tristate "Proslic api support"
+	default n
+	help
+	 slic dirver for volte.
+endmenu
+endmenu

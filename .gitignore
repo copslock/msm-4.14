@@ -1,0 +1,13 @@
+out
+scripts/*
+SDX55_apps/apps_proc/poky/build/conf/bblayers.conf
+SDX55_apps/apps_proc/filesystems/bin
+SDX55_apps/apps_proc/poky/build/fota.version
+SDX55_apps/apps_proc/poky/build/version.foldername
+SDX55_apps/apps_proc/poky/build/version.inc
+SDX55_apps/apps_proc/poky/build/version.skuname
+
+askey_images/
+gen_engineer_package.log
+**/*.pyc
+
