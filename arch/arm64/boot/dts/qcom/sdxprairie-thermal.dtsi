@@ -82,13 +82,13 @@
 		wake-capable-sensor;
 		trips {
 			cpu0a7_trip0: cpu0a7-trip0 {
-				temperature = <40000>;
-				hysteresis = <2000>;
+				temperature = <100000>;
+				hysteresis = <15000>;
 				type = "passive";
 			};
 			cpu0a7_trip1: cpu0a7-trip1 {
-				temperature = <43000>;
-				hysteresis = <4000>;
+				temperature = <108000>;
+				hysteresis = <15000>;
 				type = "passive";
 			};
 			cpu0a7_trip2: cpu0a7-trip2 {
@@ -280,8 +280,8 @@
 		tracks-low;
 		trips {
 			cpu0_trip: active-config0 {
-				temperature = <40000>;
-				hysteresis = <2000>;
+				temperature = <85000>;
+				hysteresis = <5000>;
 				type = "passive";
 			};
 		};
