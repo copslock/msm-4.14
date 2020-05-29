@@ -134,7 +134,7 @@
 };
 
 &thermal_zones {
-	modem-lte-sub6-pa1 {
+	sdr8250-sub6 {
 		polling-delay-passive = <0>;
 		polling-delay = <0>;
 		thermal-governor = "user_space";
