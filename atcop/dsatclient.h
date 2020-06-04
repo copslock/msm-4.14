@@ -738,7 +738,7 @@ dsatclienti_ext_send_urc
 );
 
 void dsat_reset_cmd (void);
-
+void dsat_setemp_cmd (void);
 void dsat_shutdown_cmd(void);
 
 

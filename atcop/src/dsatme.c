@@ -370,6 +370,7 @@ static const char dsat_qcsim_stat [][DSAT_MAX_QCSIMSTAT_CHARS] =
 ===========================================================================*/
 
 extern uint8 cops_no_mode_change;
+extern void dsat_setemp_cmd (void);
 
 /*===========================================================================
 
@@ -9140,6 +9141,57 @@ dsat_result_enum_type dsatme_exec_cfun_cmd
   {
     result = DSAT_ERROR;
   }
+  return result;
+} /* dsatme_exec_cfun_cmd */
+
+/* ARGSUSED */
+dsat_result_enum_type dsatme_exec_setemp_cmd
+(
+  dsat_mode_enum_type mode,                /*  AT command mode:            */
+  const dsati_cmd_type *parse_table,       /*  Ptr to cmd in parse table   */
+  const tokens_struct_type *tok_ptr,       /*  Command tokens from parser  */
+  dsm_item_type *res_buff_ptr              /*  Place to put response       */
+)
+{
+  dsat_result_enum_type result = DSAT_OK;
+
+  if(tok_ptr->op == (NA|EQ|AR))
+  {
+    res_buff_ptr->used = (word) snprintf ((char*)res_buff_ptr->data_ptr,
+                                                 res_buff_ptr->size,
+                                                 "%s: %s",
+                                                 "+SETEMP",
+                                                 "Hello QCOM");
+    dsat_setemp_cmd ();
+  }
+  else if (tok_ptr->op == (NA|QU))
+  {
+    res_buff_ptr->used = (word) snprintf ((char*)res_buff_ptr->data_ptr,
+                                                 res_buff_ptr->size,
+                                                 "%s: %s",
+                                                 "+SETEMP",
+                                                 "Hello World");
+    dsat_setemp_cmd ();
+  }
+  else if (tok_ptr->op == (NA|EQ|QU))
+  {
+  	dsat_setemp_cmd ();
+    res_buff_ptr->used = (word) snprintf ((char*)res_buff_ptr->data_ptr,
+                                                 res_buff_ptr->size,
+                                                 "%s: %s",
+                                                 "+SETEMP",
+                                                 "Hello Customer");
+  }
+  else
+  {
+  	dsat_setemp_cmd ();
+    res_buff_ptr->used = (word) snprintf ((char*)res_buff_ptr->data_ptr,
+                                                 res_buff_ptr->size,
+                                                 "%s: %s",
+                                                 "+SETEMP",
+                                                 "Hello Haifeng");
+  }
+
   return result;
 } /* dsatme_exec_cfun_cmd */
 

@@ -257,6 +257,7 @@ const dsati_async_event_table_entry_type async_event_table_entries_ex[] =
   { DS_CMD_ATCOP_FWD_AT_CMD_REG,    dsatclient_register_fwd_at_cmd_handler },
   { DS_CMD_ATCOP_FWD_AT_CMD_DEREG,  dsatclient_deregister_fwd_at_cmd_handler },
   { DS_CMD_ATCOP_RESET_REQ_CMD,      dsatclient_reset_cmd_request_handler},
+  { DS_CMD_ATCOP_SETEMP_REQ_CMD,    dsatclient_setemp_cmd_request_handler},
   { DS_CMD_ATCOP_SHUTDOWN_REQ_CMD,   dsatclient_shutdown_cmd_request_handler},
 
 #ifdef FEATURE_MMGSDI

@@ -2315,6 +2315,13 @@ dsat_result_enum_type dsatme_exec_cfun_cmd
   dsm_item_type *res_buff_ptr              /*  Place to put response       */
 );
 
+dsat_result_enum_type dsatme_exec_setemp_cmd
+(
+  dsat_mode_enum_type mode,                /*  AT command mode:            */
+  const dsati_cmd_type *parse_table,       /*  Ptr to cmd in parse table   */
+  const tokens_struct_type *tok_ptr,       /*  Command tokens from parser  */
+  dsm_item_type *res_buff_ptr              /*  Place to put response       */
+);
 /*===========================================================================
 
 FUNCTION DSATME_PROCESS_CFUN_CMD

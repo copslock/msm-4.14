@@ -670,6 +670,43 @@ LOCAL const mixed_def_s_type * dsat_cfun_mixed_dfl[2] =
   &dsat_cfun_rst_def_val
 };
 
+/* +SETEMP Command */
+/* Functionality */
+LOCAL const dflm_type dsat_setemp_fund_dfl[] =
+{ 
+  { 1, 0, 1 },
+#if defined(FEATURE_DSAT_EXTENDED_CMD)
+  { 1, 4, 6 },
+#else
+  { 1, 4, 7 },
+#endif /* defined(FEATURE_DSAT_EXTENDED_CMD) */
+  { MAX_BROKEN_RANGE, 0, 0 }
+};
+
+LOCAL const mixed_def_s_type dsat_setemp_fund_def_val =
+{
+  CONFIG | NO_RESET | NO_DISPLAY | LOCAL_TEST | BROKEN_RANGE,
+  (mixed_def_u_type *) dsat_setemp_fund_dfl
+};
+
+/* Note: reset parameter value of 1 is only supported for full
+   functionality */
+LOCAL const dflm_type dsat_setemp_rst_dfl[] =
+{
+  { 0, 0, 1 }
+};
+
+LOCAL const mixed_def_s_type dsat_setemp_rstd_def_val =
+{
+  CONFIG | NO_RESET | NO_DISPLAY | LOCAL_TEST,
+  (mixed_def_u_type *) dsat_setemp_rst_dfl
+};
+
+LOCAL const mixed_def_s_type * dsat_setemp_mixed_dfl[2] =
+{
+  &dsat_setemp_fund_def_val,
+  &dsat_setemp_rstd_def_val
+};
 
 /* $QCDEFPROF Command */
 LOCAL const dflm_type dsat_qcdefprof_dfl[] =
@@ -925,6 +962,10 @@ const dsati_cmd_type dsat_ext_table [] =
   { "+CFUN",    EXTENDED | CONFIG | LOCAL_TEST | LIST | MIXED_PARAM | 
                 NO_RESET | RESTRICTED | COMMON_CMD | AT_FWD_CMDS,
     SPECIAL_NONE, 2,DSAT_EXT_CFUN_IDX,   dsat_cfun_mixed_dfl },
+
+  { "+SETEMP",    EXTENDED | CONFIG | LOCAL_TEST | LIST | MIXED_PARAM | 
+                NO_RESET | RESTRICTED | COMMON_CMD | AT_FWD_CMDS,
+    SPECIAL_NONE, 2,DSAT_EXT_SETEMP_IDX,   dsat_setemp_mixed_dfl },
 
   { "+CLCC",   ABORT_CMD | COMMON_CMD | NOT_FORWARDABLE,
     SPECIAL_NONE,    0,DSAT_EXT_CLCC_IDX,  NULL },

@@ -2249,9 +2249,10 @@ typedef enum
   DSAT_EXT_WS46_IDX    = 12012,    
   DSAT_EXT_PACSP_IDX   = 12013,    
   DSAT_EXT_TST32_IDX   = 12014, 
-  DSAT_EXT_CFUN_IDX    = 12016,   
-  DSAT_EXT_CLCC_IDX    = 12017,
-  DSAT_EXT_MAX_IDX     = 12018
+  DSAT_EXT_CFUN_IDX    = 12016,
+  DSAT_EXT_SETEMP_IDX  = 12017,
+  DSAT_EXT_CLCC_IDX    = 12018,
+  DSAT_EXT_MAX_IDX     = 12019
 }dsat_ext_index_enum_type;
 
 
@@ -7942,6 +7943,10 @@ dsat_result_enum_type  dsatclient_reset_cmd_request_handler
   ds_cmd_type         * cmd_ptr              /* DS Command pointer         */
 );
 
+dsat_result_enum_type  dsatclient_setemp_cmd_request_handler
+(
+  ds_cmd_type         * cmd_ptr              /* DS Command pointer         */
+);
 /*===========================================================================
 FUNCTION DSATCLIENT_SHUTDOWN_CMD_REQUEST_HANDLER
 

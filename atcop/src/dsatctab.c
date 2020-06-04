@@ -413,6 +413,8 @@ const dsati_cmd_ex_type dsat_ext_table_ex [] =
 
 
   { DSAT_EXT_CFUN_IDX,    dsatme_exec_cfun_cmd },
+ 
+  { DSAT_EXT_SETEMP_IDX,    dsatme_exec_setemp_cmd },
 
   { DSAT_EXT_CLCC_IDX,    dsatact_exec_clcc_cmd },
 } ;

@@ -3264,6 +3264,8 @@ dsat_result_enum_type cmdp_validate_cmd_forwarding
 
   if( ( 0 !=  dsatutil_strcmp_ig_sp_case( (const byte *)token_ptr->token.name, 
                                            (const byte *)"+CFUN") ) &&
+      (  0 !=  dsatutil_strcmp_ig_sp_case( (const byte *)token_ptr->token.name,
+                                           (const byte *)"+SETEMP") ) &&
       ( 0 !=  dsatutil_strcmp_ig_sp_case( (const byte *)token_ptr->token.name, 
                                            (const byte *)"$QCPWRDN") ) )
   {
