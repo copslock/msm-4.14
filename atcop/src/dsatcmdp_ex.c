@@ -600,10 +600,6 @@ void  dsat_complete_atcop_initialization( void )
   dsatsms_init_sms_ex( );
 #endif /* defined(FEATURE_CDMA_SMS) || defined(FEATURE_ETSI_SMS) */
 /* Initialize of CDMA CFUN */
-#ifdef FEATURE_CDMA
-  DSATUTIL_SET_VAL(DSAT_EXT_CFUND_IDX,0,0,0,DSAT_ME_FUNC_MAX,MIX_NUM_TYPE)
-#endif /* FEATURE_CDMA */
-
 
 #ifdef FEATURE_DATA_MUX
   #error code not present

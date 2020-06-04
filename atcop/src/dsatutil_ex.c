@@ -2644,9 +2644,6 @@ void* dsatutil_get_basic_ext_vals
      resp = &dsat_basic_ext_vals.dsat_ws46_val;
      break;
 #endif /* defined(FEATURE_DSAT_ETSI_MODE)*/
-   case DSAT_EXT_CFUND_IDX:
-     resp = &dsat_basic_ext_vals.dsat_cfun_val[0];
-     break;
 
    default:
     resp = NULL;

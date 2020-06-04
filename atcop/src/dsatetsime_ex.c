@@ -303,7 +303,6 @@ void dsatetsime_init_me ( void )
   /* Assume phone initializes with unknown functionality. */
   /* This is required as Call Manager does not send    */
   /* an operating mode event during initialization.    */
-  DSATUTIL_SET_VAL(DSAT_EXT_CFUND_IDX,0,0,0,DSAT_ME_FUNC_MAX,MIX_NUM_TYPE) 
   /* Clear ME indicators */
   for (i = DSAT_MS_FIRST_SUBS; i < DSAT_MS_MAX_SUBS; i++)
   {

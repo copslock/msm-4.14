@@ -2337,11 +2337,6 @@ SIDE EFFECTS
   None
 
 ===========================================================================*/
-dsat_result_enum_type dsatme_process_cfun_cmd
-(
-  sys_oprt_mode_e_type  oprt_mode,
-  dsat_me_func_e_type   old_opmode
-);
 
 /*===========================================================================
 
