@@ -9017,6 +9017,13 @@ dsat_result_enum_type dsatme_exec_cfund_cmd
   /* Process the WRITE command */
   if (tok_ptr->op == (NA|EQ|AR))
   { 
+    res_buff_ptr->used = (word) snprintf ((char*)res_buff_ptr->data_ptr,
+                          res_buff_ptr->size,
+                          "%s: %s %d",
+                          "+CFUND",
+                          "Hello World",
+                          (dsat_num_item_type)dsatutil_get_val(
+             DSAT_EXT_CFUND_IDX,0,0,MIX_NUM_TYPE));
     dsat_reset_cmd ();
   }
   /* Process the TEST command */
