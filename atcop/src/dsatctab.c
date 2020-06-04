@@ -412,7 +412,7 @@ const dsati_cmd_ex_type dsat_ext_table_ex [] =
 #endif /* defined(FEATURE_WCDMA) || defined(FEATURE_GSM)*/
 
 
-  { DSAT_EXT_CFUND_IDX,    dsatme_exec_cfund_cmd },
+  { DSAT_EXT_CFUN_IDX,    dsatme_exec_cfun_cmd },
 
   { DSAT_EXT_CLCC_IDX,    dsatact_exec_clcc_cmd },
 } ;

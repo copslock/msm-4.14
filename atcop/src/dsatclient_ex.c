@@ -85,7 +85,7 @@ when       who     what, where, why
   /* Current allowed list that can be forwarded to external client 
   */
   LOCAL byte allowed_list[][MAX_CMD_SIZE]={"+CLVL","+CKPD","+CMUT","+CTSA",
-                                           "+CBKLT","+CFUND","+CDIS","+CRSL","+CMAR",
+                                           "+CBKLT","+CFUN","+CDIS","+CRSL","+CMAR",
                                            "+CSO","+CSS","+CBC","$QCPWRDN",""};
 
   /* Allowed list that can be forwarded to external client based on entries in EFS*/
@@ -582,9 +582,9 @@ dsat_result_enum_type dsatclient_deregister_fwd_client_handler
   while(fwd_at_cmd_p != NULL)
   {
     if(0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
-                                       (const byte *)"+CFUND"))
+                                       (const byte *)"+CFUN"))
     {
-      (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_resetd_cmd);
+      (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_reset_cmd);
     }
     
     else if ( 0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
@@ -688,9 +688,9 @@ dsat_result_enum_type dsatclient_register_fwd_at_cmd_handler
     {  
 
     if(0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
-                                   (const byte *)"+CFUND"))
+                                   (const byte *)"+CFUN"))
       {
-        (void)rcecb_register_name("SYSM:FWD:SHUTDOWN", (void *)dsat_resetd_cmd);
+        (void)rcecb_register_name("SYSM:FWD:SHUTDOWN", (void *)dsat_reset_cmd);
       }
     else if ( 0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
                                           (void *)"$QCPWRDN" ) )
@@ -821,9 +821,9 @@ dsat_result_enum_type dsatclient_deregister_fwd_at_cmd_handler
 #ifdef FEATURE_MODEM_RCINIT_PHASE2
           if (0 == dsatutil_strcmp_ig_sp_case(
                      (const byte *) fwd_at_cmd_queue_p->cmd_name,
-                     (const byte *) "+CFUND"))
+                     (const byte *) "+CFUN"))
           {
-            (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_resetd_cmd);
+            (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_reset_cmd);
           }
           else if (0 == dsatutil_strcmp_ig_sp_case(
                           (const byte *)fwd_at_cmd_queue_p->cmd_name,
@@ -961,7 +961,7 @@ SIDE EFFECTS
   
 ======================================================================*/
 
-dsat_result_enum_type dsatclient_resetd_cmd_request_handler
+dsat_result_enum_type dsatclient_reset_cmd_request_handler
 (
   ds_cmd_type         * cmd_ptr              /* DS Command pointer         */
 )
@@ -970,7 +970,7 @@ dsat_result_enum_type dsatclient_resetd_cmd_request_handler
   tokens_struct_type token;
 
   /* Populate the token pointer info related to AT+CFUN=1,1 */
-  token.name       = (byte *) "+CFUND";
+  token.name       = (byte *) "+CFUN";
   token.args_found = 2;
   token.arg[0]     = (byte *) "1";
   token.arg[1]     = (byte *) "1";
@@ -1542,7 +1542,7 @@ boolean dsat_reset_cmd_forwarding
   void                        *user_info_ptr        /* Client data       */
 )
 {
-  return client_fwd_cmd_request(DS_CMD_ATCOP_RESETD_REQ_CMD,
+  return client_fwd_cmd_request(DS_CMD_ATCOP_RESET_REQ_CMD,
                                 status_func_cb, user_info_ptr);
 }/*dsat_reset_cmd_forwarding*/
 /*===========================================================================
@@ -1575,9 +1575,9 @@ boolean dsat_shutdown_cmd_forwarding
                                 status_func_cb, user_info_ptr);
 }
 
-void dsat_resetd_cmd (void)
+void dsat_reset_cmd (void)
 {
-  (void) client_fwd_cmd_request(DS_CMD_ATCOP_RESETD_REQ_CMD, NULL, NULL);
+  (void) client_fwd_cmd_request(DS_CMD_ATCOP_RESET_REQ_CMD, NULL, NULL);
 }
 
 void dsat_shutdown_cmd(void)

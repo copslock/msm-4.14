@@ -737,7 +737,7 @@ dsatclienti_ext_send_urc
   dsm_item_type                             *resp_buff_ptr/* response buffer */
 );
 
-void dsat_resetd_cmd (void);
+void dsat_reset_cmd (void);
 
 void dsat_shutdown_cmd(void);
 

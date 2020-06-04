@@ -370,7 +370,6 @@ static const char dsat_qcsim_stat [][DSAT_MAX_QCSIMSTAT_CHARS] =
 ===========================================================================*/
 
 extern uint8 cops_no_mode_change;
-extern void dsat_resetd_cmd (void);
 
 /*===========================================================================
 
@@ -7338,7 +7337,32 @@ LOCAL dsat_result_enum_type cfun_process_card_pwr_ctl_status
   ds_at_cmd_status_type *cmd_info_ptr
 )
 {
-  return DSAT_OK;
+  dsat_result_enum_type result = DSAT_ASYNC_CMD;
+
+  /* Ensure GSDI call was successful */
+  if ( ( MMGSDI_SUCCESS != cmd_info_ptr->cmd_status ) &&
+       ( MMGSDI_REFRESH_SUCCESS != cmd_info_ptr->cmd_status ))
+  {
+    SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_NONE)
+    DS_AT_MSG1_HIGH("MMGSDI SIM card power control call not successful: %d",
+              cmd_info_ptr->cmd_status);
+    if ( MMGSDI_RESTRICTED_IN_ONCHIP_MODE != cmd_info_ptr->cmd_status )
+    {
+      /* Report +CME error */
+      result = dsat_send_cme_error(DSAT_CME_PHONE_FAILURE);
+    }
+    else
+    {
+      /* Report OK when OnChip SIM is activated */
+      result = DSAT_OK;
+    }
+  }
+  else
+  {
+    DS_AT_MSG0_HIGH("Unexpected result in MMGSDI SIM card power control hdlr");
+  }
+
+  return result;
 } /* cfun_process_card_pwr_ctl_status */
 #endif /* FEATURE_DSAT_CFUN_CARD_POWER_CTL */
 
@@ -9004,7 +9028,7 @@ SIDE EFFECTS
 
 ===========================================================================*/
 /* ARGSUSED */
-dsat_result_enum_type dsatme_exec_cfund_cmd
+dsat_result_enum_type dsatme_exec_cfun_cmd
 (
   dsat_mode_enum_type mode,                /*  AT command mode:            */
   const dsati_cmd_type *parse_table,       /*  Ptr to cmd in parse table   */
@@ -9013,19 +9037,99 @@ dsat_result_enum_type dsatme_exec_cfund_cmd
 )
 {
   dsat_result_enum_type result = DSAT_OK;
+
+  if( mode != DSAT_CMD )
+  {
+    return DSAT_ERROR;
+  }
   
   /* Process the WRITE command */
   if (tok_ptr->op == (NA|EQ|AR))
-  { 
-    res_buff_ptr->used = (word) snprintf ((char*)res_buff_ptr->data_ptr,
-                          res_buff_ptr->size,
-                          "%s: %s %d",
-                          "+CFUND",
-                          "Hello World",
-                          (dsat_num_item_type)dsatutil_get_val(
-             DSAT_EXT_CFUND_IDX,0,0,MIX_NUM_TYPE));
-    dsat_resetd_cmd ();
+  {
+    /* Save old opmode */
+    dsat_num_item_type temp_val = (dsat_num_item_type)dsatutil_get_val(
+                                            DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE);
+    dsat_me_func_e_type   old_opmode = (dsat_me_func_e_type)temp_val;
+
+    /* Default <rst> to 0 */
+    
+    DSATUTIL_SET_VAL(DSAT_EXT_CFUN_IDX,0,1,0,DSAT_ME_DONT_RESET,MIX_NUM_TYPE)
+    /* If reset parameter was provided... */
+    if ( VALID_TOKEN(1) && !VALID_TOKEN(0) )
+    {
+      /* Parameter value error */
+      return DSAT_ERROR;
+    }
+    /* Parse command line input to dsat_cfun_val[0/1] */
+    if (DSAT_OK == 
+        dsatparm_exec_param_cmd (mode, parse_table, tok_ptr, res_buff_ptr))
+    {
+      
+      if ((dsat_num_item_type) dsatutil_get_val(
+             DSAT_EXT_CFUN_IDX,0,1,MIX_NUM_TYPE)== (dsat_num_item_type)DSAT_ME_DO_RESET &&
+           (dsat_num_item_type)dsatutil_get_val(
+             DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE) != (dsat_num_item_type)DSAT_ME_FUNC_FULL )
+      {
+
+        DSATUTIL_SET_VAL(DSAT_EXT_CFUN_IDX,0,0,0,old_opmode,MIX_NUM_TYPE)
+        DS_AT_MSG0_HIGH("+CFUN Only supports reset to full functionality");
+        dsatme_set_cme_error(DSAT_CME_OP_NOT_SUPPORTED, res_buff_ptr);
+        return  DSAT_CMD_ERR_RSP;
+      }
+    }
+    else
+    {
+      return DSAT_ERROR;
+    }
+    /* Don't allow +CFUN write command until current mode is known */
+
+    if ( old_opmode == DSAT_ME_FUNC_MAX )
+    {
+      /* Make an asynch call to cm to retreive the oprt_mode */
+      /* The success as well as failure will be handled by 
+         the call back function */
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE_CB)
+      result = DSAT_ASYNC_CMD;
+      (void) cm_ph_cmd_get_ph_info (dsatcmif_ph_cmd_cb_func,
+                                    NULL,
+                                    dsatcm_client_id);
+    }
+    else 
+    {
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE)
+      /* For DSAT_CFUN_WRITE, the argument to dsatme_process_cfun_cmd is not required
+         just to support the prototype of the function */
+      result = dsatme_process_cfun_cmd ( (sys_oprt_mode_e_type) NULL, old_opmode);
+    }
   }
+
+  /* Process the READ command */
+  else if (tok_ptr->op == (NA|QU))
+  {
+    /* If functionality unknown query CM */
+    if ( (dsat_num_item_type)DSAT_ME_FUNC_MAX == 
+         (dsat_num_item_type)dsatutil_get_val(DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE))
+    {
+      /* The success as well as failure will be handled by 
+         the call back function */
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_READ);
+      result = DSAT_ASYNC_CMD;
+      (void)cm_ph_cmd_get_ph_info (dsatcmif_ph_cmd_cb_func,
+                                   NULL,
+                                   dsatcm_client_id);
+    }
+    else
+    {
+      /* Only the functionality value is output */
+      res_buff_ptr->used = 0;
+      res_buff_ptr->used = (word)snprintf ( (char*)res_buff_ptr->data_ptr,
+                                                  res_buff_ptr->size,
+                                                  "+CFUN: %d",
+                                                  (dsat_num_item_type)dsatutil_get_val(
+                                                  DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE));
+    }
+  }
+
   /* Process the TEST command */
   else if (tok_ptr->op == (NA|EQ|QU)) 
   {
@@ -9034,7 +9138,6 @@ dsat_result_enum_type dsatme_exec_cfund_cmd
   /* Command does not make sense */
   else
   {
-  	dsat_resetd_cmd ();
     result = DSAT_ERROR;
   }
   return result;
@@ -9065,6 +9168,146 @@ SIDE EFFECTS
 
 ===========================================================================*/
 /* ARGSUSED */
+dsat_result_enum_type dsatme_process_cfun_cmd
+(
+  sys_oprt_mode_e_type  oprt_mode,
+  dsat_me_func_e_type   old_opmode
+)
+{
+  dsat_result_enum_type result = DSAT_OK;
+  sys_oprt_mode_e_type  new_opmode = SYS_OPRT_MODE_ONLINE;
+  dsat_mixed_param_val_type *temp_mix_type;
+  dsatme_mmgsdi_state_ss_info  *me_ss_val = NULL;
+
+  me_ss_val = dsat_get_base_addr(DSAT_MMGSDI_SS_VALS, FALSE);
+
+  if ( CHECK_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_WRITE_CB) )
+  {
+    /* oprt_mode is received from CM */
+    if ( TRUE != dsatme_convert_phone_state(TRUE, &oprt_mode, &old_opmode) )
+    {
+      (void)dsat_send_cme_error(DSAT_CME_OP_NOT_ALLOWED);
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_NONE)
+      DSATUTIL_SET_VAL(DSAT_EXT_CFUN_IDX,0,0,0,DSAT_ME_FUNC_MAX,MIX_NUM_TYPE)
+      return DSAT_CMD_ERR_RSP;
+    }
+    SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE)
+  }
+  if (CHECK_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_WRITE))
+  {
+    SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_NONE)
+   /* If not resetting and current and requested opmode 
+    are the same just return OK */
+    if ( (dsat_num_item_type)dsatutil_get_val(
+          DSAT_EXT_CFUN_IDX,0,1,MIX_NUM_TYPE) == (dsat_num_item_type)DSAT_ME_DONT_RESET &&
+         (dsat_num_item_type)old_opmode == (dsat_num_item_type)dsatutil_get_val(
+          DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE))
+    {
+#if defined(FEATURE_DSAT_CFUN_CARD_POWER_CTL) && defined (FEATURE_DSAT_ETSI_MODE)
+      if ((DSAT_ME_FUNC_FULL == old_opmode) && (is_card_action == TRUE))
+      {
+        return dsatme_process_cfun_card_pup_cmd(FALSE);
+      }
+#endif /* FEATURE_DSAT_CFUN_CARD_POWER_CTL */
+      return DSAT_OK;
+    }
+    else
+    {
+      /* If resetting, change +CFUN <fun> value to put phone in offline mode 
+         in preparation for reset */
+     /* Reset support for CFUN = 6 */
+      if ( (dsat_num_item_type)DSAT_ME_DO_RESET == 
+           (dsat_num_item_type)dsatutil_get_val(DSAT_EXT_CFUN_IDX,0,1,MIX_NUM_TYPE) ||
+          (((dsat_num_item_type)DSAT_ME_FUNC_RESET == (dsat_num_item_type)dsatutil_get_val(
+            DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE))) )
+      {
+         /*Do not change cfun value to OFFLINE for command CFUN=6 */
+         if(FALSE == ((DSAT_ME_FUNC_OFFLINE == old_opmode )&&((dsat_num_item_type)DSAT_ME_FUNC_RESET == (dsat_num_item_type)dsatutil_get_val(
+            DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE))))
+         {
+           DSATUTIL_SET_VAL(DSAT_EXT_CFUN_IDX,0,0,0,DSAT_ME_FUNC_OFFLINE,MIX_NUM_TYPE)
+         }
+         if(TRUE == cm_rpm_check_reset_allowed())
+         {
+           sys_m_initiate_shutdown();
+           DS_AT_MSG0_HIGH("Called sys_m_initiate_shutdown");
+           return DSAT_OK;
+         }
+         else
+         {
+           DS_AT_MSG0_HIGH("Reset is blocked");
+           DSATUTIL_SET_VAL(DSAT_EXT_CFUN_IDX,0,0,0,old_opmode,MIX_NUM_TYPE);
+           return DSAT_ERROR;
+         }
+      }
+
+      /* To check if CM allowed LPM cmd or not*/
+      if ( (dsat_num_item_type)dsatutil_get_val(
+            DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE) == (dsat_num_item_type)DSAT_ME_FUNC_MIN)
+      {
+        if(!cm_rpm_check_reset_allowed())
+        {
+          DS_AT_MSG0_HIGH("CM Denied LPM cmd");
+          return DSAT_ERROR;
+        }
+      }
+	  
+      temp_mix_type = (dsat_mixed_param_val_type *)dsatutil_get_val(
+                                    DSAT_EXT_CFUN_IDX,0,0,MIX_INDEX_TYPE);
+      /* Convert +CFUN <fun> parm to desired new opmode */
+      if ( TRUE == dsatme_convert_phone_state( 
+                   FALSE, 
+                   &new_opmode,
+                   (dsat_me_func_e_type*)&(temp_mix_type->num_item) ) )
+      {
+        /* Invoke Call Manager API requesting functionality change */
+        result = dsatcmif_change_operating_mode (new_opmode);
+        if (DSAT_ASYNC_CMD != result)
+        {
+          SET_PENDING(DSAT_EXT_CFUN_IDX, 0, DSAT_PENDING_CFUN_NONE);
+          if (result == DSAT_OK)
+          {
+            return result;
+          } 
+        }
+      }
+      else
+      {
+        SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_NONE)
+        result = DSAT_ERROR;
+      }
+    }
+     /* Restore original operating mode; new mode set via asynch event */
+    DSATUTIL_SET_VAL(DSAT_EXT_CFUN_IDX,0,0,0,old_opmode,MIX_NUM_TYPE)
+  }
+
+  /* Process the READ command */
+  if ( CHECK_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_READ))
+  {
+    dsm_item_type * res_buff_ptr;
+
+    SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_NONE)
+    temp_mix_type = (dsat_mixed_param_val_type *)dsatutil_get_val(
+                                 DSAT_EXT_CFUN_IDX,0,0,MIX_INDEX_TYPE);
+    if (TRUE != dsatme_convert_phone_state
+               (TRUE, &oprt_mode,
+               (dsat_me_func_e_type*)&(temp_mix_type->num_item)))
+    {
+      return DSAT_ERROR;
+    }     
+    res_buff_ptr = dsat_dsm_new_buffer(DSM_DS_SMALL_ITEM_POOL, FALSE);
+    /* Only the functionality value is output */
+    
+    res_buff_ptr->used = (word)snprintf ( (char*)res_buff_ptr->data_ptr,
+                                                res_buff_ptr->size,
+                                                "+CFUN: %d",
+                                                (dsat_num_item_type)dsatutil_get_val(
+                                                DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE));
+    dsatcmdp_handle_async_cmd_rsp(res_buff_ptr, DSAT_COMPLETE_RSP);
+  }
+
+  return result;
+} /* dsatme_process_cfun_cmd */
 
 /*===========================================================================
 
@@ -9093,6 +9336,109 @@ boolean dsatme_convert_phone_state
   dsat_me_func_e_type   *at_mode_ptr   /* ATCOP mode           */
 )
 {
+  dsatme_mmgsdi_state_ss_info  *me_ss_val = NULL;
+  me_ss_val = dsat_get_base_addr(DSAT_MMGSDI_SS_VALS, FALSE);
+
+  if (TRUE == to_at_state)
+  {
+    switch ( *cm_mode_ptr )
+    {
+    case SYS_OPRT_MODE_PWROFF:
+      *at_mode_ptr = DSAT_ME_FUNC_MIN;
+      break;
+
+    case SYS_OPRT_MODE_LPM:
+#if defined(FEATURE_DSAT_EXTENDED_CMD)
+      *at_mode_ptr = DSAT_ME_FUNC_MIN;
+#else
+      /* LPM is duplicated in mapping between system modes and +CFUN parms:
+         used for +CFUN=0 (w/ SIM card power down) and +CFUN=4 (Tx & Rx off) */
+      if ( CHECK_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_WRITE_RFOFF) )
+      {
+        *at_mode_ptr = DSAT_ME_FUNC_RFOFF;
+      }
+      else
+      {
+        *at_mode_ptr = DSAT_ME_FUNC_MIN;
+      }
+#endif /* defined(FEATURE_DSAT_EXTENDED_CMD) */
+      break;
+
+    case SYS_OPRT_MODE_OFFLINE:
+    case SYS_OPRT_MODE_OFFLINE_AMPS:
+    case SYS_OPRT_MODE_OFFLINE_CDMA:
+#if defined(FEATURE_DSAT_EXTENDED_CMD)
+      *at_mode_ptr = DSAT_ME_FUNC_RFOFF;
+#else
+      *at_mode_ptr = DSAT_ME_FUNC_OFFLINE;
+#endif /* defined(FEATURE_DSAT_EXTENDED_CMD) */
+      break;    
+
+    case SYS_OPRT_MODE_FTM:
+      *at_mode_ptr = DSAT_ME_FUNC_FTM;
+      break;    
+
+    case SYS_OPRT_MODE_RESET:
+      *at_mode_ptr = DSAT_ME_FUNC_RESET;
+      break;    
+
+    case SYS_OPRT_MODE_ONLINE:
+      *at_mode_ptr = DSAT_ME_FUNC_FULL;
+      break;
+      
+    default:
+      DS_ATCOP_ERROR_LOG_1("Unsupported CM operating mode: =d",*cm_mode_ptr);
+      return FALSE;    
+    }
+  }
+  else
+  {
+    /* Convert demand state to CM operating mode */
+    switch ( *at_mode_ptr )
+    {
+    case DSAT_ME_FUNC_MIN:
+      *cm_mode_ptr = SYS_OPRT_MODE_LPM;
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE_MIN)
+      break;
+    
+    case DSAT_ME_FUNC_FULL:
+      *cm_mode_ptr = SYS_OPRT_MODE_ONLINE;
+       SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE_FULL)
+      break;    
+
+    case DSAT_ME_FUNC_FTM:
+      *cm_mode_ptr = SYS_OPRT_MODE_FTM;
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE_FTM)
+      break;
+      
+    case DSAT_ME_FUNC_OFFLINE:
+#if defined(FEATURE_DSAT_EXTENDED_CMD)
+      *cm_mode_ptr = SYS_OPRT_MODE_OFFLINE_CDMA;
+#else
+      *cm_mode_ptr = SYS_OPRT_MODE_OFFLINE;
+#endif /* defined(FEATURE_DSAT_EXTENDED_CMD) */
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE_OFFLINE)
+      break;
+      
+    case DSAT_ME_FUNC_RESET:
+      *cm_mode_ptr = SYS_OPRT_MODE_RESET;
+       SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE_RESET)
+      break;
+      
+    case DSAT_ME_FUNC_RFOFF:
+#if defined(FEATURE_DSAT_EXTENDED_CMD)
+      *cm_mode_ptr = SYS_OPRT_MODE_OFFLINE;
+#else
+      *cm_mode_ptr = SYS_OPRT_MODE_LPM;
+#endif /* defined(FEATURE_DSAT_EXTENDED_CMD) */
+      SET_PENDING(DSAT_EXT_CFUN_IDX ,0, DSAT_PENDING_CFUN_WRITE_RFOFF)
+      break;
+      
+    default:
+      DS_ATCOP_ERROR_LOG_1("Unsupported ATCOP operating mode: =d",*at_mode_ptr);
+      return FALSE;    
+    }
+  }
   return TRUE;
 } /* dsatme_convert_phone_state() */
 
@@ -9121,7 +9467,38 @@ SIDE EFFECTS
 /* ARGSUSED */
 dsat_result_enum_type dsatme_process_cfun_card_pdown_cmd(void)
 {
-  return TRUE;
+  dsat_result_enum_type             result = DSAT_OK;
+  mmgsdi_slot_id_enum_type          slot_id, slot_id_start = MMGSDI_SLOT_1;
+  mmgsdi_return_enum_type           ret_val;
+  dsatme_mmgsdi_state_ss_info      *me_ss_val = NULL;
+  uint8 max_subs = dsat_get_max_subs();
+
+  me_ss_val = dsat_get_base_addr(DSAT_MMGSDI_SS_VALS, FALSE);
+  me_ss_val->dsat_is_card_power_down = TRUE;
+  if(max_subs == 1)
+  {
+    slot_id_start = max_subs = dsat_get_current_slot_id();
+  }
+
+  for (slot_id = slot_id_start; slot_id <= max_subs; slot_id++)
+    {
+      ret_val = mmgsdi_card_pdown( me_ss_val->dsat_mmgsdi_client_id,
+                                   slot_id,
+                                   dsatetsime_mmgsdi_card_power_ctl_cb,
+                                   MMGSDI_CARD_POWER_DOWN_NOTIFY_GSDI,
+                                   0 );
+
+      if (MMGSDI_RESTRICTED_IN_ONCHIP_MODE != ret_val)
+      {
+        result = DSAT_ASYNC_CMD;
+        SET_PENDING(DSAT_EXT_CFUN_IDX, 0, DSAT_PENDING_CFUN_WRITE_CARD_DOWN);
+
+#if defined(FEATURE_8960_SGLTE_FUSION)
+        dsat_set_provision_state(DSAT_MMGSDI_DOWN);
+#endif /* defined(FEATURE_8960_SGLTE_FUSION) */
+      }
+    }
+  return result;
 } /* dsatme_process_cfun_card_pdown_cmd */
 
 /*===========================================================================
@@ -9183,6 +9560,7 @@ dsat_result_enum_type dsatme_process_cfun_card_pup_cmd
       {
         me_ss_val->dsat_num_of_card_operations++;
         result = DSAT_ASYNC_CMD;
+        SET_PENDING(DSAT_EXT_CFUN_IDX, 0, DSAT_PENDING_CFUN_WRITE_CARD_PUP);
 
 #if defined(FEATURE_8960_SGLTE_FUSION)
         dsat_set_provision_state(DSAT_MMGSDI_UP);

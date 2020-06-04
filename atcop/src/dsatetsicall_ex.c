@@ -648,13 +648,16 @@ net_reg_status_e_type  dsatetsicall_creg_get_net_reg_status
 
   /*Setting Net registration status based on CFUN and COPS values*/
 
-  if(DSAT_COPS_MODE_AUTO ==(dsat_num_item_type)dsatutil_get_val(DSATETSI_EXT_ACT_COPS_ETSI_IDX,subs_id,0,MIX_NUM_TYPE))
+  if(DSAT_COPS_MODE_AUTO ==(dsat_num_item_type)dsatutil_get_val(
+       DSATETSI_EXT_ACT_COPS_ETSI_IDX,subs_id,0,MIX_NUM_TYPE) && 
+   ((dsat_num_item_type)dsatutil_get_val(DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE) == DSAT_ME_FUNC_FULL))
   {
   
     net_val = DSAT_NET_REG_SEARCHING;
     
   }else if((DSAT_COPS_MODE_MANUAL ==(dsat_num_item_type)dsatutil_get_val(
-       DSATETSI_EXT_ACT_COPS_ETSI_IDX,subs_id,0,MIX_NUM_TYPE) ))
+       DSATETSI_EXT_ACT_COPS_ETSI_IDX,subs_id,0,MIX_NUM_TYPE) )||
+    ((dsat_num_item_type)dsatutil_get_val(DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE) != DSAT_ME_FUNC_FULL))
   {
     net_val = DSAT_NET_REG_NONE;
     

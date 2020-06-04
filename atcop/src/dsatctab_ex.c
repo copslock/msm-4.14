@@ -634,7 +634,7 @@ LOCAL const dflm_type dsat_dsci_dflm [] =
 
 /* +CFUN Command */
 /* Functionality */
-LOCAL const dflm_type dsat_cfun_fund_dfl[] =
+LOCAL const dflm_type dsat_cfun_fun_dfl[] =
 { 
   { 1, 0, 1 },
 #if defined(FEATURE_DSAT_EXTENDED_CMD)
@@ -645,29 +645,29 @@ LOCAL const dflm_type dsat_cfun_fund_dfl[] =
   { MAX_BROKEN_RANGE, 0, 0 }
 };
 
-LOCAL const mixed_def_s_type dsat_cfun_fund_def_val =
+LOCAL const mixed_def_s_type dsat_cfun_fun_def_val =
 {
   CONFIG | NO_RESET | NO_DISPLAY | LOCAL_TEST | BROKEN_RANGE,
-  (mixed_def_u_type *) dsat_cfun_fund_dfl
+  (mixed_def_u_type *) dsat_cfun_fun_dfl
 };
 
 /* Note: reset parameter value of 1 is only supported for full
    functionality */
-LOCAL const dflm_type dsat_cfund_rst_dfl[] =
+LOCAL const dflm_type dsat_cfun_rst_dfl[] =
 {
   { 0, 0, 1 }
 };
 
-LOCAL const mixed_def_s_type dsat_cfun_rstd_def_val =
+LOCAL const mixed_def_s_type dsat_cfun_rst_def_val =
 {
   CONFIG | NO_RESET | NO_DISPLAY | LOCAL_TEST,
-  (mixed_def_u_type *) dsat_cfund_rst_dfl
+  (mixed_def_u_type *) dsat_cfun_rst_dfl
 };
 
-LOCAL const mixed_def_s_type * dsat_cfund_mixed_dfl[2] =
+LOCAL const mixed_def_s_type * dsat_cfun_mixed_dfl[2] = 
 {
-  &dsat_cfun_fund_def_val,
-  &dsat_cfun_rstd_def_val
+  &dsat_cfun_fun_def_val,
+  &dsat_cfun_rst_def_val
 };
 
 
@@ -922,9 +922,9 @@ const dsati_cmd_type dsat_ext_table [] =
 #endif /* defined(FEATURE_WCDMA) || defined(FEATURE_GSM)*/
 
 
-  { "+CFUND",    EXTENDED | CONFIG | LOCAL_TEST | LIST | MIXED_PARAM | 
+  { "+CFUN",    EXTENDED | CONFIG | LOCAL_TEST | LIST | MIXED_PARAM | 
                 NO_RESET | RESTRICTED | COMMON_CMD | AT_FWD_CMDS,
-    SPECIAL_NONE, 2,DSAT_EXT_CFUND_IDX,   dsat_cfund_mixed_dfl },
+    SPECIAL_NONE, 2,DSAT_EXT_CFUN_IDX,   dsat_cfun_mixed_dfl },
 
   { "+CLCC",   ABORT_CMD | COMMON_CMD | NOT_FORWARDABLE,
     SPECIAL_NONE,    0,DSAT_EXT_CLCC_IDX,  NULL },

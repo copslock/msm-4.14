@@ -2249,7 +2249,7 @@ typedef enum
   DSAT_EXT_WS46_IDX    = 12012,    
   DSAT_EXT_PACSP_IDX   = 12013,    
   DSAT_EXT_TST32_IDX   = 12014, 
-  DSAT_EXT_CFUND_IDX    = 12016,   
+  DSAT_EXT_CFUN_IDX    = 12016,   
   DSAT_EXT_CLCC_IDX    = 12017,
   DSAT_EXT_MAX_IDX     = 12018
 }dsat_ext_index_enum_type;
@@ -7937,7 +7937,7 @@ SIDE EFFECTS
   
 ======================================================================*/
 
-dsat_result_enum_type  dsatclient_resetd_cmd_request_handler
+dsat_result_enum_type  dsatclient_reset_cmd_request_handler
 (
   ds_cmd_type         * cmd_ptr              /* DS Command pointer         */
 );

@@ -3833,7 +3833,15 @@ dsat_result_enum_type dsatvend_exec_qcmrue_cmd
 
   if(tok_ptr->op == (NA|QU)||(tok_ptr->op == (NA|EQ|AR)))
   {
-
+    if ((dsat_num_item_type)dsatutil_get_val(
+             DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE) != DSAT_ME_FUNC_FULL)
+    {
+      DS_AT_MSG0_HIGH(" MRU can be operated only in Online mode ");
+      dsatme_set_cme_error(DSAT_CME_OP_NOT_SUPPORTED, res_buff_ptr);
+      return  DSAT_CMD_ERR_RSP;
+    }
+    else
+    {
       if(tok_ptr->op == (NA|EQ|AR))
       {
         if( tok_ptr->args_found != 4 )
@@ -3968,7 +3976,7 @@ dsat_result_enum_type dsatvend_exec_qcmrue_cmd
         SET_PENDING( DSAT_VENDOR_QCMRUE_IDX, 0, DSAT_PENDING_MRU_READ );
         result = dsatvend_mru_action(DSAT_PENDING_MRU_READ);
       }
-    
+    }
   }
   else if ( tok_ptr->op == (NA|EQ|QU))
   {
@@ -4070,8 +4078,18 @@ dsat_result_enum_type dsatvend_exec_qcmruc_cmd
 
   if(tok_ptr->op == (NA))
   {
+    if ((dsat_num_item_type)dsatutil_get_val(
+             DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE) != DSAT_ME_FUNC_FULL)
+    {
+      DS_AT_MSG0_HIGH(" MRU can be operated only in Online mode ");
+      dsatme_set_cme_error(DSAT_CME_OP_NOT_SUPPORTED, res_buff_ptr);
+      return  DSAT_CMD_ERR_RSP;
+    }
+    else
+    {
       SET_PENDING( DSAT_VENDOR_QCMRUC_IDX, 0, DSAT_PENDING_MRU_CLEAR );
       result = vend_mru_change_sys_oprt_mode( SYS_OPRT_MODE_LPM );
+    }
   }
   else
   {

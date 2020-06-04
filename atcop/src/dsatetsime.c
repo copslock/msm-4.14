@@ -2489,8 +2489,12 @@ dsat_result_enum_type dsat_pin_mmgsdi_event_handler
          up, the reception of card inserted event will signify successful end of
          processing. This case deliberately falls through to processing below. */
          
-
-      result = DSAT_OK;
+      if(CHECK_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_WRITE_CARD_PUP) )
+      {
+        SET_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_NONE);
+        me_ss_val->dsat_card_error_event_count = 0;
+        result = DSAT_OK;
+      }
 #endif /* FEATURE_DSAT_CFUN_CARD_POWER_CTL */
       break;
 
@@ -2561,6 +2565,26 @@ dsat_result_enum_type dsat_pin_mmgsdi_event_handler
        If +CFUN has set MIN functionality and SIM card has been powered 
        down, the reception of card error event will signify successful end of
        processing. This case deliberately falls through to processing below. */
+    
+    if(CHECK_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_WRITE_CARD_DOWN) )
+    {
+       SET_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_NONE)
+      result = DSAT_OK;
+    }
+    if(CHECK_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_WRITE_CARD_PUP) )
+    {
+      me_ss_val->dsat_card_error_event_count++;
+      if (me_ss_val->dsat_card_error_event_count < me_ss_val->dsat_num_of_card_operations)
+      {
+        return DSAT_ASYNC_EVENT;
+      }
+      else
+      {
+        me_ss_val->dsat_card_error_event_count = 0;
+        SET_PENDING(DSAT_EXT_CFUN_IDX,0,DSAT_PENDING_CFUN_NONE)
+        result = DSAT_OK;
+      }
+    }
 
 #endif /* FEATURE_DSAT_CFUN_CARD_POWER_CTL */
     break;

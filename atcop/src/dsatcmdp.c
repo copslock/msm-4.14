@@ -3157,8 +3157,10 @@ dsat_result_enum_type dsatcmdp_process_cmd_forwarding ( void )
 
       dsatclient_state_info_update(&curr_state);
       /*If issued command is AT+CFUN=6 .mapped CFUN=6 into CFUN=1,1*/
-        if( 0 ==  dsatutil_strcmp_ig_sp_case( (const byte *)token_ptr->token.name, 
-                                          (const byte *)"+CFUN") )
+        if(( 0 ==  dsatutil_strcmp_ig_sp_case( (const byte *)token_ptr->token.name, 
+                                          (const byte *)"+CFUN") )&&
+           ((dsat_num_item_type)DSAT_ME_FUNC_RESET == (dsat_num_item_type)dsatutil_get_val(
+                                          DSAT_EXT_CFUN_IDX,0,0,MIX_NUM_TYPE)))
         {
           token_ptr->token.args_found = 2;
           token_ptr->token.arg[0] = curr_arg;
@@ -3261,7 +3263,7 @@ dsat_result_enum_type cmdp_validate_cmd_forwarding
   curr_token_ptr = token_ptr;
 
   if( ( 0 !=  dsatutil_strcmp_ig_sp_case( (const byte *)token_ptr->token.name, 
-                                           (const byte *)"+CFUND") ) &&
+                                           (const byte *)"+CFUN") ) &&
       ( 0 !=  dsatutil_strcmp_ig_sp_case( (const byte *)token_ptr->token.name, 
                                            (const byte *)"$QCPWRDN") ) )
   {
