@@ -310,7 +310,7 @@ const dsati_async_event_table_entry_type async_event_table_entries[] =
   { DS_CMD_ATCOP_FWD_AT_CMD_REG,    dsatclient_register_fwd_at_cmd_handler },
   { DS_CMD_ATCOP_FWD_AT_CMD_DEREG,  dsatclient_deregister_fwd_at_cmd_handler },
   { DS_CMD_ATCOP_EXT_CMD_RESP,      dsatclient_ext_at_resp_handler },
-  { DS_CMD_ATCOP_RESETD_REQ_CMD,    dsatclient_reset_cmd_request_handler},
+  { DS_CMD_ATCOP_RESETD_REQ_CMD,    dsatclient_resetd_cmd_request_handler},
   { DS_CMD_ATCOP_SHUTDOWN_REQ_CMD,  dsatclient_shutdown_cmd_request_handler},
   { DS_CMD_ATCOP_EXT_CMD_URC,       dsatclient_ext_at_urc_handler},
 #ifdef FEATURE_ECALL_APP 

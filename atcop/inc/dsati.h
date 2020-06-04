@@ -7937,7 +7937,7 @@ SIDE EFFECTS
   
 ======================================================================*/
 
-dsat_result_enum_type  dsatclient_reset_cmd_request_handler
+dsat_result_enum_type  dsatclient_resetd_cmd_request_handler
 (
   ds_cmd_type         * cmd_ptr              /* DS Command pointer         */
 );
