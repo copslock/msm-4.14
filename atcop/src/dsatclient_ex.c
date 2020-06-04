@@ -584,7 +584,7 @@ dsat_result_enum_type dsatclient_deregister_fwd_client_handler
     if(0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
                                        (const byte *)"+CFUND"))
     {
-      (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_reset_cmd);
+      (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_resetd_cmd);
     }
     
     else if ( 0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
@@ -690,7 +690,7 @@ dsat_result_enum_type dsatclient_register_fwd_at_cmd_handler
     if(0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
                                    (const byte *)"+CFUND"))
       {
-        (void)rcecb_register_name("SYSM:FWD:SHUTDOWN", (void *)dsat_reset_cmd);
+        (void)rcecb_register_name("SYSM:FWD:SHUTDOWN", (void *)dsat_resetd_cmd);
       }
     else if ( 0 == dsatutil_strcmp_ig_sp_case((const byte *)fwd_at_cmd_p->cmd_name,
                                           (void *)"$QCPWRDN" ) )
@@ -823,7 +823,7 @@ dsat_result_enum_type dsatclient_deregister_fwd_at_cmd_handler
                      (const byte *) fwd_at_cmd_queue_p->cmd_name,
                      (const byte *) "+CFUND"))
           {
-            (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_reset_cmd);
+            (void)rcecb_unregister_name("SYSM:FWD:SHUTDOWN", (void *)dsat_resetd_cmd);
           }
           else if (0 == dsatutil_strcmp_ig_sp_case(
                           (const byte *)fwd_at_cmd_queue_p->cmd_name,
@@ -1575,7 +1575,7 @@ boolean dsat_shutdown_cmd_forwarding
                                 status_func_cb, user_info_ptr);
 }
 
-void dsat_reset_cmd (void)
+void dsat_resetd_cmd (void)
 {
   (void) client_fwd_cmd_request(DS_CMD_ATCOP_RESETD_REQ_CMD, NULL, NULL);
 }

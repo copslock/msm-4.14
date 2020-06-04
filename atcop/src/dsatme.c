@@ -370,7 +370,7 @@ static const char dsat_qcsim_stat [][DSAT_MAX_QCSIMSTAT_CHARS] =
 ===========================================================================*/
 
 extern uint8 cops_no_mode_change;
-extern void dsat_reset_cmd (void);
+extern void dsat_resetd_cmd (void);
 
 /*===========================================================================
 
@@ -9024,7 +9024,7 @@ dsat_result_enum_type dsatme_exec_cfund_cmd
                           "Hello World",
                           (dsat_num_item_type)dsatutil_get_val(
              DSAT_EXT_CFUND_IDX,0,0,MIX_NUM_TYPE));
-    dsat_reset_cmd ();
+    dsat_resetd_cmd ();
   }
   /* Process the TEST command */
   else if (tok_ptr->op == (NA|EQ|QU)) 
@@ -9034,7 +9034,7 @@ dsat_result_enum_type dsatme_exec_cfund_cmd
   /* Command does not make sense */
   else
   {
-  	dsat_reset_cmd ();
+  	dsat_resetd_cmd ();
     result = DSAT_ERROR;
   }
   return result;
