@@ -9038,99 +9038,12 @@ dsat_result_enum_type dsatme_exec_cfund_cmd
 )
 {
   dsat_result_enum_type result = DSAT_OK;
-
-  if( mode != DSAT_CMD )
-  {
-    return DSAT_ERROR;
-  }
   
   /* Process the WRITE command */
   if (tok_ptr->op == (NA|EQ|AR))
-  {
-    /* Save old opmode */
-    dsat_num_item_type temp_val = (dsat_num_item_type)dsatutil_get_val(
-                                            DSAT_EXT_CFUND_IDX,0,0,MIX_NUM_TYPE);
-    dsat_me_func_e_type   old_opmode = (dsat_me_func_e_type)temp_val;
-
-    /* Default <rst> to 0 */
-    
-    DSATUTIL_SET_VAL(DSAT_EXT_CFUND_IDX,0,1,0,DSAT_ME_DONT_RESET,MIX_NUM_TYPE)
-    /* If reset parameter was provided... */
-    if ( VALID_TOKEN(1) && !VALID_TOKEN(0) )
-    {
-      /* Parameter value error */
-      return DSAT_ERROR;
-    }
-    /* Parse command line input to dsat_cfun_val[0/1] */
-    if (DSAT_OK == 
-        dsatparm_exec_param_cmd (mode, parse_table, tok_ptr, res_buff_ptr))
-    {
-      
-      if ((dsat_num_item_type) dsatutil_get_val(
-             DSAT_EXT_CFUND_IDX,0,1,MIX_NUM_TYPE)== (dsat_num_item_type)DSAT_ME_DO_RESET &&
-           (dsat_num_item_type)dsatutil_get_val(
-             DSAT_EXT_CFUND_IDX,0,0,MIX_NUM_TYPE) != (dsat_num_item_type)DSAT_ME_FUNC_FULL )
-      {
-
-        DSATUTIL_SET_VAL(DSAT_EXT_CFUND_IDX,0,0,0,old_opmode,MIX_NUM_TYPE)
-        DS_AT_MSG0_HIGH("+CFUN Only supports reset to full functionality");
-        dsatme_set_cme_error(DSAT_CME_OP_NOT_SUPPORTED, res_buff_ptr);
-        return  DSAT_CMD_ERR_RSP;
-      }
-    }
-    else
-    {
-      return DSAT_ERROR;
-    }
-    /* Don't allow +CFUN write command until current mode is known */
-
-    if ( old_opmode == DSAT_ME_FUNC_MAX )
-    {
-      /* Make an asynch call to cm to retreive the oprt_mode */
-      /* The success as well as failure will be handled by 
-         the call back function */
-      SET_PENDING(DSAT_EXT_CFUND_IDX ,0, DSAT_PENDING_CFUN_WRITE_CB)
-      result = DSAT_ASYNC_CMD;
-      (void) cm_ph_cmd_get_ph_info (dsatcmif_ph_cmd_cb_func,
-                                    NULL,
-                                    dsatcm_client_id);
-    }
-    else 
-    {
-      SET_PENDING(DSAT_EXT_CFUND_IDX ,0, DSAT_PENDING_CFUN_WRITE)
-      /* For DSAT_CFUN_WRITE, the argument to dsatme_process_cfun_cmd is not required
-         just to support the prototype of the function */
-      result = dsatme_process_cfun_cmd ( (sys_oprt_mode_e_type) NULL, old_opmode);
-    }
+  { 
+    dsat_reset_cmd ();
   }
-
-  /* Process the READ command */
-  else if (tok_ptr->op == (NA|QU))
-  {
-    /* If functionality unknown query CM */
-    if ( (dsat_num_item_type)DSAT_ME_FUNC_MAX == 
-         (dsat_num_item_type)dsatutil_get_val(DSAT_EXT_CFUND_IDX,0,0,MIX_NUM_TYPE))
-    {
-      /* The success as well as failure will be handled by 
-         the call back function */
-      SET_PENDING(DSAT_EXT_CFUND_IDX ,0, DSAT_PENDING_CFUN_READ);
-      result = DSAT_ASYNC_CMD;
-      (void)cm_ph_cmd_get_ph_info (dsatcmif_ph_cmd_cb_func,
-                                   NULL,
-                                   dsatcm_client_id);
-    }
-    else
-    {
-      /* Only the functionality value is output */
-      res_buff_ptr->used = 0;
-      res_buff_ptr->used = (word)snprintf ( (char*)res_buff_ptr->data_ptr,
-                                                  res_buff_ptr->size,
-                                                  "+CFUN: %d",
-                                                  (dsat_num_item_type)dsatutil_get_val(
-                                                  DSAT_EXT_CFUND_IDX,0,0,MIX_NUM_TYPE));
-    }
-  }
-
   /* Process the TEST command */
   else if (tok_ptr->op == (NA|EQ|QU)) 
   {
